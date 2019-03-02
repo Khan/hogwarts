@@ -25,7 +25,7 @@ BAR_COLORS = {
 def calculate_scales(house_points):
     total_points = float(sum(house_points.values())) or 1.0
 
-    return {house: house_points.get(house, 0) / total_points for house in HOUSES}
+    return {house: 1.0 if house_points.get(house, 0) == 1200 else (house_points.get(house, 0) / total_points) for house in HOUSES}
 
 def draw_bar_for_house(im, house, scale):
     draw = ImageDraw.Draw(im)

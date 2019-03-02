@@ -71,6 +71,9 @@ class PointCounter(object):
                 self.points[house] += points
                 self.points_dirty = True
                 messages.append(self.message_for(house, points))
+                if self.points[house] > 1200:
+                    self.points[house] = 1200
+                    messages.append("%s already has the maximum number of points!" % house)
         return messages
 
     def print_status(self):
