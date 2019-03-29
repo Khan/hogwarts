@@ -25,16 +25,18 @@ def get_client():
     return google.cloud.storage.Client()
 
 
-def get_bucket():
-    return get_client().get_bucket(BUCKET_NAME)
+def get_bucket(client):
+    return client.get_bucket(BUCKET_NAME)
 
 
 class PointCounter(object):
     def __init__(self, prefects=PREFECTS,
                  announcers=ANNOUNCERS, points_file=POINTS_FILE):
+        self.client = get_client()
+        self.bucket = get_bucket(self.client)
         try:
             self.points = Counter(json.loads(
-                BUCKET.get_blob(POINTS_FILE).download_as_string()))
+                self.bucket.get_blob(POINTS_FILE).download_as_string()))
         except Exception as e:
             print("Exception reading points file!\n%s" % e)
             self.points = Counter()
@@ -47,8 +49,8 @@ class PointCounter(object):
         if self.points_dirty:
             self.points_dirty = False
             try:
-                BUCKET.blob(self.points_file).upload_from_string(
-                    json.dumps(self.points), client=STORAGE_CLIENT)
+                self.bucket.blob(self.points_file).upload_from_string(
+                    json.dumps(self.points), client=self.client)
             except Exception as e:
                 print("Exception writing points file!\n%s" % e)
                 pass

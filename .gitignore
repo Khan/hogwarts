@@ -5,3 +5,4 @@ consts2.py
 secrets.py
 tags
 hogwarts-bot-credentials.json
+.mypy_cache

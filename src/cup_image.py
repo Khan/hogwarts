@@ -1,6 +1,6 @@
+from typing import Dict
 from consts import HOUSES, IMAGE_PATH
 from PIL import Image, ImageDraw, ImageFont
-
 
 
 # Tuples of (x1, y1, x2, y2)
@@ -22,10 +22,12 @@ BAR_COLORS = {
     "Slytherin": ("#f0efee", "#2c9959"),
 }
 
+
 def calculate_scales(house_points):
     total_points = float(sum(house_points.values())) or 1.0
 
     return {house: 1.0 if house_points.get(house, 0) == 1200 else (house_points.get(house, 0) / total_points) for house in HOUSES}
+
 
 def draw_bar_for_house(im, house, scale):
     draw = ImageDraw.Draw(im)
@@ -42,7 +44,7 @@ def draw_bar_for_house(im, house, scale):
     del draw
 
 
-def image_for_scores(scores):
+def image_for_scores(scores: Dict[str, int]) -> str:
     """Generate a sweet house cup image
    Arguments: a dictionary with house names as keys and scores as values
    Returns: filename containing a house cup image representing the
