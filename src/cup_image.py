@@ -1,7 +1,7 @@
 import os
 import tempfile
 from typing import Dict
-from consts import HOUSES, IMAGE_PATH
+from consts import HOUSES, IMAGE_PATH, MAX_POINTS
 
 from PIL import Image, ImageDraw, ImageFont
 
@@ -26,10 +26,22 @@ BAR_COLORS = {
 }
 
 
-def calculate_scales(house_points):
-    total_points = float(sum(house_points.values())) or 1.0
+def calculate_scales(house_points, base_ratio=0.5):
+    max_points = max(house_points.values())
+    min_points = min(house_points.values()) if len(
+        house_points) == len(HOUSES) else 0
 
-    return {house: 1.0 if house_points.get(house, 0) == 1200 else (house_points.get(house, 0) / total_points) for house in HOUSES}
+    # The base 50% is based on basic score
+    base = min_points / MAX_POINTS * base_ratio
+
+    # The reset is difference in the max / min
+    return {
+        house: base + (1-base) * (
+            (house_points.get(house, 0) - min_points) /
+            (max_points - min_points)
+        )
+        for house in HOUSES
+    }
 
 
 def draw_bar_for_house(im, house, scale):
