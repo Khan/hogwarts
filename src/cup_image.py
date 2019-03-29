@@ -47,7 +47,7 @@ def draw_bar_for_house(im, house, scale):
     del draw
 
 
-def image_for_scores(scores: Dict[str, int]) -> str:
+def image_for_scores(scores: Dict[str, int], imgname=None) -> str:
     """Generate a sweet house cup image
    Arguments: a dictionary with house names as keys and scores as values
    Returns: filename containing a house cup image representing the
@@ -73,11 +73,9 @@ def image_for_scores(scores: Dict[str, int]) -> str:
              BAR_RECTS[house][3] + BAR_SPACE),
             text,
             fill=BAR_COLORS[house][1], font=font)
-
-    outfile = os.path.join(
-        tempfile.gettempdir(),
-        str(abs(hash(str(scores)))) + '.png'
-    )
+    if not imgname:
+        imgname = str(abs(hash(str(scores))))
+    outfile = os.path.join(tempfile.gettempdir(), imgname + '.png')
     merged.save(outfile, "PNG")
     del overlay
     del bars

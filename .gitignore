@@ -6,3 +6,4 @@ secrets.py
 tags
 hogwarts-bot-credentials.json
 .mypy_cache
+tmp
