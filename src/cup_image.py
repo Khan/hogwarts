@@ -8,10 +8,10 @@ from PIL import Image, ImageDraw, ImageFont
 
 # Tuples of (x1, y1, x2, y2)
 BAR_RECTS = {
-    "Gryffindor": (62, 70, 204, 513),
-    "Hufflepuff": (418, 70, 560, 513),
-    "Slytherin": (596, 70, 738, 513),
-    "Ravenclaw": (240, 70, 382, 513),
+    "Gryffindor": (210, 57, 346, 514),
+    "Ravenclaw": (400, 57, 536, 514),
+    "Hufflepuff": (585, 57, 721, 514),
+    "Slytherin": (769, 57, 913, 514),
 }
 
 # Space below the bottom of the bar to superimpose the scores in text form
