@@ -1,5 +1,8 @@
+import os
+import tempfile
 from typing import Dict
 from consts import HOUSES, IMAGE_PATH
+
 from PIL import Image, ImageDraw, ImageFont
 
 
@@ -71,7 +74,10 @@ def image_for_scores(scores: Dict[str, int]) -> str:
             text,
             fill=BAR_COLORS[house][1], font=font)
 
-    outfile = str(abs(hash(str(scores)))) + '.png'
+    outfile = os.path.join(
+        tempfile.gettempdir(),
+        str(abs(hash(str(scores)))) + '.png'
+    )
     merged.save(outfile, "PNG")
     del overlay
     del bars

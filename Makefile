@@ -11,11 +11,11 @@ create-namespace:
 build-docker-image: EMPTY
 	docker build -t hogwarts-bot .
 
-test build-docker-image
+test: build-docker-image
 	docker run -it --entrypoint "python" -v "`pwd`/src:/app" hogwarts-bot test.py
 
 devshell:
-	docker run -it --entrypoint "bash" -v "`pwd`/src:/app" hogwarts-bot
+	docker run -it --entrypoint "bash" -v "`pwd`/src:/app" -v "`pwd`/tmp:/tmp" hogwarts-bot
 
 build: build-docker-image
 	docker tag hogwarts-bot gcr.io/khan-internal-services/hogwarts-bot
