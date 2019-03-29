@@ -7,6 +7,7 @@ import unittest
 TEST_PREFECTS = ["prefect"]
 TEST_POINTS = "test_points.pkl"
 
+
 class TestPointCounter(unittest.TestCase):
     """Initialize a point counter and test response messages"""
 
@@ -17,7 +18,7 @@ class TestPointCounter(unittest.TestCase):
         p = PointCounter(TEST_PREFECTS, points_file=TEST_POINTS)
         msg = p.award_points("6 points to Gryffindor", TEST_PREFECTS[0])
         for m in msg:
-            self.assertEqual(m,"Gryffindor gets 6 points")
+            self.assertEqual(m, "Gryffindor gets 6 points")
 
     def test_adding_points_not_by_prefect(self):
         p = PointCounter(TEST_PREFECTS, points_file=TEST_POINTS)
@@ -54,7 +55,8 @@ class TestPointCounter(unittest.TestCase):
         p.award_points("8 points to Hufflepuff", TEST_PREFECTS[0])
         p.award_points("9 points to Slytherin", TEST_PREFECTS[0])
         for m in p.print_status():
-            print m
+            print(m)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -19,8 +19,14 @@ nth = {
 }
 
 BUCKET_NAME = "ka_users"
-STORAGE_CLIENT = google.cloud.storage.Client()
-BUCKET = STORAGE_CLIENT.get_bucket(BUCKET_NAME)
+
+
+def get_client():
+    return google.cloud.storage.Client()
+
+
+def get_bucket():
+    return get_client().get_bucket(BUCKET_NAME)
 
 
 class PointCounter(object):
@@ -73,7 +79,8 @@ class PointCounter(object):
                 messages.append(self.message_for(house, points))
                 if self.points[house] > 1200:
                     self.points[house] = 1200
-                    messages.append("%s already has the maximum number of points!" % house)
+                    messages.append(
+                        "%s already has the maximum number of points!" % house)
         return messages
 
     def print_status(self):
@@ -90,6 +97,7 @@ def is_hogwarts_related(message):
         "user" in message and
         "point" in message["text"] and
         points_util.get_houses_from(message["text"]))
+
 
 def main():
     sc = SlackClient(SLACK_TOKEN)
@@ -110,8 +118,7 @@ def main():
                             username="Hogwarts bot", text=m)
                     os.system(
                         "curl -F file=@%s -F title=%s -F channels=%s -F token=%s https://slack.com/api/files.upload"
-                         % (cup_image.image_for_scores(p.points), '"House Points"', CHANNEL, SLACK_TOKEN))
-
+                        % (cup_image.image_for_scores(p.points), '"House Points"', CHANNEL, SLACK_TOKEN))
 
                 time.sleep(1)
                 p.post_update()

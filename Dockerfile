@@ -4,8 +4,7 @@ ENV GOOGLE_APPLICATION_CREDENTIALS=/app/secrets/hogwarts-bot-credentials.json
 ADD requirements.txt /tmp
 RUN pip3 install -r /tmp/requirements.txt
 
-ADD src/* /app/
-RUN ln -s /app/secrets/secrets.py /app/secrets.py
+COPY src/ /app/
 
 WORKDIR /app
 

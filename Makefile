@@ -8,8 +8,13 @@ create-secret:
 create-namespace:
 	kubectl create -f ./namespace.yaml
 
-build: EMPTY
+build-docker-image: EMPTY
 	docker build -t hogwarts-bot .
+
+devshell: build-docker-image
+	docker run -it --entrypoint "bash" -v "`pwd`/src:/app" hogwarts-bot
+
+biuld: build-docker-image
 	docker tag hogwarts-bot gcr.io/khan-internal-services/hogwarts-bot
 	gcloud docker -- push gcr.io/khan-internal-services/hogwarts-bot
 
