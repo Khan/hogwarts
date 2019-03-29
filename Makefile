@@ -14,7 +14,10 @@ build-docker-image: EMPTY
 devshell: build-docker-image
 	docker run -it --entrypoint "bash" -v "`pwd`/src:/app" hogwarts-bot
 
-biuld: build-docker-image
+test:
+	docker run -it --entrypoint "python" -v "`pwd`/src:/app" hogwarts-bot test.py
+
+build: build-docker-image
 	docker tag hogwarts-bot gcr.io/khan-internal-services/hogwarts-bot
 	gcloud docker -- push gcr.io/khan-internal-services/hogwarts-bot
 
