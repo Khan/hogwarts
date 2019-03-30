@@ -1,10 +1,10 @@
 import os
 import tempfile
 from typing import Dict
-from consts import HOUSES, IMAGE_PATH, MAX_POINTS
 
 from PIL import Image, ImageDraw, ImageFont
 
+from consts import HOUSES, IMAGE_PATH, MAX_POINTS
 
 # Tuples of (x1, y1, x2, y2)
 BAR_RECTS = {

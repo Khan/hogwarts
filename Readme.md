@@ -19,6 +19,8 @@ To run tests:
 make test
 ```
 
+This will generate the test images in `/tmp` folder.
+
 You can start developing using the devshell to execut local server
 
 ```
