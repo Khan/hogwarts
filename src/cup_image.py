@@ -26,17 +26,17 @@ BAR_COLORS = {
 }
 
 
-def calculate_scales(house_points, base_ratio=0.2):
+def calculate_scales(house_points, base_ratio=0.2, interpolate_ratio=0.7):
     max_points = max(house_points.values())
     min_points = min(house_points.values()) if len(
         house_points) == len(HOUSES) else 0
 
     # The base 50% is based on basic score
-    base = min_points / MAX_POINTS * base_ratio
+    base = (max_points / MAX_POINTS) * base_ratio
 
     # The reset is difference in the max / min
     return {
-        house: base + (1-base_ratio) * (
+        house: base + interpolate_ratio * (
             (house_points.get(house, 0) - min_points) /
             (max_points - min_points)
         )
