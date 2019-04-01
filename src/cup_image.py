@@ -26,19 +26,40 @@ BAR_COLORS = {
 }
 
 
-def calculate_scales(house_points, base_ratio=0.6, interpolate_ratio=0.3):
+def calculate_scales(house_points, base_ratio=0.6):
+    """Calcaulate intepolation ratio
+
+    This try to maximise the difference visually, but also ensure that
+    we reflect progress towards our max_point
+
+    Base is shared between all bars.
+    Interpolation is based on the difference between the bars
+
+    See image_test.py for test cases
+
+    """
     max_points = max(house_points.values())
     min_points = min(house_points.values()) if len(
         house_points) == len(HOUSES) else 0
+    interpolation_range = max_points - min_points
 
-    # The base 50% is based on basic score
-    base = (max_points / MAX_POINTS) * base_ratio
+    # The base 60% is based on basic score
+    base = (min_points / MAX_POINTS) * base_ratio
+    # The rest of the base is intepolation, but with minimum 40%
+    interpolation_ratio = max(
+        (max_points / MAX_POINTS) * (1-base), (1-base_ratio)
+    )
+    # NOTE: base + interpolation_ratio < base_ratio + interpolation_ratio  <= 1
 
     # The reset is difference in the max / min
     return {
-        house: base + interpolate_ratio * (
-            (house_points.get(house, 0) - min_points) /
-            max(max_points - min_points, 1)
+        house: 0 if house_points.get(house, 0) == 0 else (
+            base + interpolation_ratio * (
+                (
+                    (house_points.get(house, 0) - min_points) /
+                    interpolation_range
+                ) if interpolation_range else 1
+            )
         )
         for house in HOUSES
     }
