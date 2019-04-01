@@ -1,14 +1,17 @@
-from consts import HOUSES, IMAGE_PATH
+import os
+import tempfile
+from typing import Dict
+
 from PIL import Image, ImageDraw, ImageFont
 
-
+from consts import HOUSES, IMAGE_PATH, MAX_POINTS
 
 # Tuples of (x1, y1, x2, y2)
 BAR_RECTS = {
-    "Gryffindor": (62, 70, 204, 513),
-    "Hufflepuff": (418, 70, 560, 513),
-    "Slytherin": (596, 70, 738, 513),
-    "Ravenclaw": (240, 70, 382, 513),
+    "Gryffindor": (210, 57, 346, 514),
+    "Ravenclaw": (400, 57, 536, 514),
+    "Hufflepuff": (585, 57, 721, 514),
+    "Slytherin": (769, 57, 913, 514),
 }
 
 # Space below the bottom of the bar to superimpose the scores in text form
@@ -16,16 +19,51 @@ BAR_SPACE = 10
 
 # Tuples of (background, fill)
 BAR_COLORS = {
-    "Gryffindor": ("#fef9ec", "#de5647"),
-    "Ravenclaw": ("#f3f9fc", "#0a8bc9"),
-    "Hufflepuff": ("#fef9ec", "#f5bf45"),
-    "Slytherin": ("#f0efee", "#2c9959"),
+    "Gryffindor": ("#ffffff", "#d7282e"),
+    "Ravenclaw": ("#ffffff", "#0071b9"),
+    "Hufflepuff": ("#ffffff", "#fdb714"),
+    "Slytherin": ("#ffffff", "#008345"),
 }
 
-def calculate_scales(house_points):
-    total_points = float(sum(house_points.values())) or 1.0
 
-    return {house: 1.0 if house_points.get(house, 0) == 1200 else (house_points.get(house, 0) / total_points) for house in HOUSES}
+def calculate_scales(house_points, base_ratio=0.6):
+    """Calcaulate intepolation ratio
+
+    This try to maximise the difference visually, but also ensure that
+    we reflect progress towards our max_point
+
+    Base is shared between all bars.
+    Interpolation is based on the difference between the bars
+
+    See image_test.py for test cases
+
+    """
+    max_points = max(house_points.values())
+    min_points = min(house_points.values()) if len(
+        house_points) == len(HOUSES) else 0
+    interpolation_range = max_points - min_points
+
+    # The base 60% is based on basic score
+    base = (min_points / MAX_POINTS) * base_ratio
+    # The rest of the base is intepolation, but with minimum 40%
+    interpolation_ratio = max(
+        (max_points / MAX_POINTS) * (1-base), (1-base_ratio)
+    )
+    # NOTE: base + interpolation_ratio < base_ratio + interpolation_ratio  <= 1
+
+    # The reset is difference in the max / min
+    return {
+        house: 0 if house_points.get(house, 0) == 0 else (
+            base + interpolation_ratio * (
+                (
+                    (house_points.get(house, 0) - min_points) /
+                    interpolation_range
+                ) if interpolation_range else 1
+            )
+        )
+        for house in HOUSES
+    }
+
 
 def draw_bar_for_house(im, house, scale):
     draw = ImageDraw.Draw(im)
@@ -42,7 +80,7 @@ def draw_bar_for_house(im, house, scale):
     del draw
 
 
-def image_for_scores(scores):
+def image_for_scores(scores: Dict[str, int], imgname=None) -> str:
     """Generate a sweet house cup image
    Arguments: a dictionary with house names as keys and scores as values
    Returns: filename containing a house cup image representing the
@@ -67,9 +105,10 @@ def image_for_scores(scores):
             ((BAR_RECTS[house][0] + BAR_RECTS[house][2] - w) * 0.5,
              BAR_RECTS[house][3] + BAR_SPACE),
             text,
-            fill=BAR_COLORS[house][1], font=font)
-
-    outfile = str(abs(hash(str(scores)))) + '.png'
+            fill=BAR_COLORS[house][0], font=font)
+    if not imgname:
+        imgname = str(abs(hash(str(scores))))
+    outfile = os.path.join(tempfile.gettempdir(), imgname + '.png')
     merged.save(outfile, "PNG")
     del overlay
     del bars

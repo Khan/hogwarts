@@ -19,16 +19,24 @@ nth = {
 }
 
 BUCKET_NAME = "ka_users"
-STORAGE_CLIENT = google.cloud.storage.Client()
-BUCKET = STORAGE_CLIENT.get_bucket(BUCKET_NAME)
+
+
+def get_client():
+    return google.cloud.storage.Client()
+
+
+def get_bucket(client):
+    return client.get_bucket(BUCKET_NAME)
 
 
 class PointCounter(object):
     def __init__(self, prefects=PREFECTS,
                  announcers=ANNOUNCERS, points_file=POINTS_FILE):
+        self.client = get_client()
+        self.bucket = get_bucket(self.client)
         try:
             self.points = Counter(json.loads(
-                BUCKET.get_blob(POINTS_FILE).download_as_string()))
+                self.bucket.get_blob(POINTS_FILE).download_as_string()))
         except Exception as e:
             print("Exception reading points file!\n%s" % e)
             self.points = Counter()
@@ -41,8 +49,8 @@ class PointCounter(object):
         if self.points_dirty:
             self.points_dirty = False
             try:
-                BUCKET.blob(self.points_file).upload_from_string(
-                    json.dumps(self.points), client=STORAGE_CLIENT)
+                self.bucket.blob(self.points_file).upload_from_string(
+                    json.dumps(self.points), client=self.client)
             except Exception as e:
                 print("Exception writing points file!\n%s" % e)
                 pass
@@ -73,7 +81,8 @@ class PointCounter(object):
                 messages.append(self.message_for(house, points))
                 if self.points[house] > 1200:
                     self.points[house] = 1200
-                    messages.append("%s already has the maximum number of points!" % house)
+                    messages.append(
+                        "%s already has the maximum number of points!" % house)
         return messages
 
     def print_status(self):
@@ -90,6 +99,7 @@ def is_hogwarts_related(message):
         "user" in message and
         "point" in message["text"] and
         points_util.get_houses_from(message["text"]))
+
 
 def main():
     sc = SlackClient(SLACK_TOKEN)
@@ -110,8 +120,7 @@ def main():
                             username="Hogwarts bot", text=m)
                     os.system(
                         "curl -F file=@%s -F title=%s -F channels=%s -F token=%s https://slack.com/api/files.upload"
-                         % (cup_image.image_for_scores(p.points), '"House Points"', CHANNEL, SLACK_TOKEN))
-
+                        % (cup_image.image_for_scores(p.points), '"House Points"', CHANNEL, SLACK_TOKEN))
 
                 time.sleep(1)
                 p.post_update()
