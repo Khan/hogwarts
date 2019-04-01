@@ -14,7 +14,7 @@ class TestImageRender(unittest.TestCase):
             "same_early": [1, 1, 1, 1],
             "close_early": [1, 10, 1, 20],
             "same": [400, 400, 400, 400],
-            "close_middle": [600, 700, 800, 900],
+            "close_middle": [610, 620, 580, 600],
             "close_late": [1000, 1100, 1000, 1200],
             "leader": [500, 600, 700, 1000],
         }
