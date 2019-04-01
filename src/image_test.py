@@ -8,8 +8,12 @@ class TestImageRender(unittest.TestCase):
 
     def test_generate_image(self):
         cases = {
+            "empty": [0, 0, 0, 0],
             "extreme": [1, 1200, 1, 1200],
+            "extreme_empty": [0, 1200, 0, 1200],
+            "same_early": [1, 1, 1, 1],
             "close_early": [1, 10, 1, 20],
+            "same": [400, 400, 400, 400],
             "close_middle": [600, 700, 800, 900],
             "close_late": [1000, 1100, 1000, 1200],
             "leader": [500, 600, 700, 1000],

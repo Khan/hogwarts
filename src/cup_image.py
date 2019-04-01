@@ -19,14 +19,14 @@ BAR_SPACE = 10
 
 # Tuples of (background, fill)
 BAR_COLORS = {
-    "Gryffindor": ("#fef9ec", "#de5647"),
-    "Ravenclaw": ("#f3f9fc", "#0a8bc9"),
-    "Hufflepuff": ("#fef9ec", "#f5bf45"),
-    "Slytherin": ("#f0efee", "#2c9959"),
+    "Gryffindor": ("#ffffff", "#d7282e"),
+    "Ravenclaw": ("#ffffff", "#0071b9"),
+    "Hufflepuff": ("#ffffff", "#fdb714"),
+    "Slytherin": ("#ffffff", "#008345"),
 }
 
 
-def calculate_scales(house_points, base_ratio=0.2, interpolate_ratio=0.7):
+def calculate_scales(house_points, base_ratio=0.6, interpolate_ratio=0.3):
     max_points = max(house_points.values())
     min_points = min(house_points.values()) if len(
         house_points) == len(HOUSES) else 0
@@ -38,7 +38,7 @@ def calculate_scales(house_points, base_ratio=0.2, interpolate_ratio=0.7):
     return {
         house: base + interpolate_ratio * (
             (house_points.get(house, 0) - min_points) /
-            (max_points - min_points)
+            max(max_points - min_points, 1)
         )
         for house in HOUSES
     }
@@ -84,7 +84,7 @@ def image_for_scores(scores: Dict[str, int], imgname=None) -> str:
             ((BAR_RECTS[house][0] + BAR_RECTS[house][2] - w) * 0.5,
              BAR_RECTS[house][3] + BAR_SPACE),
             text,
-            fill=BAR_COLORS[house][1], font=font)
+            fill=BAR_COLORS[house][0], font=font)
     if not imgname:
         imgname = str(abs(hash(str(scores))))
     outfile = os.path.join(tempfile.gettempdir(), imgname + '.png')
