@@ -11,14 +11,10 @@ import google.cloud.storage
 
 import points_util
 import cup_image
-from consts import HOUSES, SLACK_TOKEN, PREFECTS, ANNOUNCERS, CHANNEL
-
-try:
-    from secrets import POINTS_FILE, BUCKET_NAME
-except ImportError:
-    # These will be mocked on tests
-    POINTS_FILE = ''
-    BUCKET_NAME = ''
+from consts import (
+    HOUSES, SLACK_TOKEN, PREFECTS, ANNOUNCERS, CHANNEL,
+    POINTS_FILE, BUCKET_NAME
+)
 
 
 nth = {
