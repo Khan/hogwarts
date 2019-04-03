@@ -38,9 +38,12 @@ def calculate_scales(house_points, base_ratio=0.6):
     See image_test.py for test cases
 
     """
-    max_points = max(house_points.values())
-    min_points = min(house_points.values()) if len(
-        house_points) == len(HOUSES) else 0
+    max_points = 0
+    min_points = 0
+    all_points = house_points.values()
+    if all_points:
+        max_points = max(all_points)
+        min_points = min(all_points) if len(house_points) == len(HOUSES) else 0
     interpolation_range = max_points - min_points
 
     # The base 60% is based on basic score

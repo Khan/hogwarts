@@ -1,15 +1,25 @@
 #!/usr/local/bin/python
-import points_util
-import cup_image
-from consts import HOUSES, SLACK_TOKEN, PREFECTS, ANNOUNCERS, CHANNEL, POINTS_FILE
-
 from collections import Counter
-import google.cloud.storage
 import json
 import os
 import re
-from slackclient import SlackClient
 import time
+
+from google.auth import exceptions
+from slackclient import SlackClient
+import google.cloud.storage
+
+import points_util
+import cup_image
+from consts import HOUSES, SLACK_TOKEN, PREFECTS, ANNOUNCERS, CHANNEL
+
+try:
+    from secrets import POINTS_FILE, BUCKET_NAME
+except ImportError:
+    # These will be mocked on tests
+    POINTS_FILE = ''
+    BUCKET_NAME = ''
+
 
 nth = {
     1: "first",
@@ -17,8 +27,6 @@ nth = {
     3: "third",
     4: "fourth"
 }
-
-BUCKET_NAME = "ka_users"
 
 
 def get_client():
@@ -31,14 +39,20 @@ def get_bucket(client):
 
 class PointCounter(object):
     def __init__(self, prefects=PREFECTS,
-                 announcers=ANNOUNCERS, points_file=POINTS_FILE):
-        self.client = get_client()
-        self.bucket = get_bucket(self.client)
+                 announcers=ANNOUNCERS, points_file=POINTS_FILE,
+                 reset=False):
+        self.client = None
+        self.bucket = None
         try:
-            self.points = Counter(json.loads(
-                self.bucket.get_blob(POINTS_FILE).download_as_string()))
-        except Exception as e:
+            self.client = get_client()
+            self.bucket = get_bucket(self.client)
+            data = json.loads(
+                self.bucket.get_blob(points_file).download_as_string())
+            self.points = Counter(data[0])
+        except (exceptions.DefaultCredentialsError, AttributeError) as e:
             print("Exception reading points file!\n%s" % e)
+            self.points = Counter()
+        if reset:
             self.points = Counter()
         self.prefects = prefects
         self.announcers = announcers
@@ -48,12 +62,12 @@ class PointCounter(object):
     def post_update(self):
         if self.points_dirty:
             self.points_dirty = False
-            try:
+            if self.bucket:
                 self.bucket.blob(self.points_file).upload_from_string(
-                    json.dumps(self.points), client=self.client)
-            except Exception as e:
-                print("Exception writing points file!\n%s" % e)
-                pass
+                    # NOTE: we post as array in format for KPI datatset
+                    json.dumps([self.points]), client=self.client)
+            else:
+                print("No bucket setting found - not updating.")
 
     def get_points_from(self, message, awarder):
         amount = points_util.detect_points(message)
@@ -63,12 +77,13 @@ class PointCounter(object):
         return amount
 
     @staticmethod
-    def message_for(house, points):
+    def message_for(house, points, awarder=None):
+        user_awared = f"<@{awarder}>" if awarder else ""
         if points > 0:
-            return "%s gets %s" % (
-                house, points_util.pluralized_points(points))
-        return "%s loses %s" % (
-            house, points_util.pluralized_points(abs(points)))
+            return "%s %s gets %s" % (
+                user_awared, house, points_util.pluralized_points(points))
+        return "%s %s loses %s" % (
+            user_awared, house, points_util.pluralized_points(abs(points)))
 
     def award_points(self, message, awarder):
         points = self.get_points_from(message, awarder)
@@ -78,7 +93,7 @@ class PointCounter(object):
             for house in houses:
                 self.points[house] += points
                 self.points_dirty = True
-                messages.append(self.message_for(house, points))
+                messages.append(self.message_for(house, points, awarder))
                 if self.points[house] > 1200:
                     self.points[house] = 1200
                     messages.append(
@@ -101,15 +116,41 @@ def is_hogwarts_related(message):
         points_util.get_houses_from(message["text"]))
 
 
+def convert_name_to_id(sc, channel, prefect_names):
+    """Convert the given username into ids"""
+    prefect_ids = []
+
+    prefect_name_set = set(prefect_names)
+    channel_info = sc.api_call("channels.info", channel=channel)
+    user_list = channel_info['channel']['members']
+
+    for user_id in user_list:
+        profile = sc.api_call("users.info", user=user_id)
+        user_name = profile.get('user', {}).get('name')
+        if user_name in prefect_name_set:
+            prefect_ids.append(user_id)
+
+    print("Got prefect ids: {}".format(prefect_ids))
+    sc.api_call(
+        "chat.postMessage", channel=CHANNEL,
+        as_user=True, text="Your prefects will be: {}".format(
+            ",".join([f"<@{u}>" for u in prefect_ids])
+        ))
+
+    return prefect_ids
+
+
 def main():
     sc = SlackClient(SLACK_TOKEN)
-    p = PointCounter()
     if sc.rtm_connect():
         sc.api_call(
-            "chat.postMessage", channel=CHANNEL, username="Hogwarts bot",
+            "chat.postMessage", channel=CHANNEL,
+            as_user=True,
             text="I'm alive!")
+        p = PointCounter(prefects=convert_name_to_id(sc, CHANNEL, PREFECTS))
         while True:
             messages = sc.rtm_read()
+            seen_messages = False
             for message in messages:
                 print("Message: %s" % message)
                 if is_hogwarts_related(message):
@@ -117,13 +158,15 @@ def main():
                     for m in p.award_points(message['text'], message['user']):
                         sc.api_call(
                             "chat.postMessage", channel=CHANNEL,
-                            username="Hogwarts bot", text=m)
-                    os.system(
-                        "curl -F file=@%s -F title=%s -F channels=%s -F token=%s https://slack.com/api/files.upload"
-                        % (cup_image.image_for_scores(p.points), '"House Points"', CHANNEL, SLACK_TOKEN))
-
-                time.sleep(1)
-                p.post_update()
+                            as_user=True, text=m)
+                        seen_messages = True
+            # NOTE: the following rendering is slow, try to limit it's use
+            if seen_messages:
+                os.system(
+                    "curl -F file=@%s -F title=%s -F channels=%s -F token=%s https://slack.com/api/files.upload"
+                    % (cup_image.image_for_scores(p.points), '"House Points"', CHANNEL, SLACK_TOKEN))
+            time.sleep(1)
+            p.post_update()
     else:
         print("Connection Failed, invalid token?")
 

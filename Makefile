@@ -13,6 +13,7 @@ build-docker-image: EMPTY
 
 test: build-docker-image
 	docker run -it --entrypoint "python" -v "`pwd`/src:/app" -v "`pwd`/tmp:/tmp" hogwarts-bot image_test.py
+	docker run -it --entrypoint "python" -v "`pwd`/src:/app" hogwarts-bot test.py
 
 devshell:
 	docker run -it --entrypoint "bash" -v "`pwd`/src:/app" -v "`pwd`/tmp:/tmp" hogwarts-bot

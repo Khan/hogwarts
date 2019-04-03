@@ -1,11 +1,13 @@
 """
 Test point counter functionality
 """
-from main import PointCounter
+from main import PointCounter, get_client
 import unittest
 
+from google.auth import exceptions
+
 TEST_PREFECTS = ["prefect"]
-TEST_POINTS = "test_points.pkl"
+TEST_POINTS = "dataset/hackathon.test.json"
 
 
 class TestPointCounter(unittest.TestCase):
@@ -14,11 +16,24 @@ class TestPointCounter(unittest.TestCase):
     def setUp(self):
         self.p = PointCounter(TEST_PREFECTS, points_file=TEST_POINTS)
 
+    def test_post_update(self):
+        try:
+            get_client()
+        except exceptions.DefaultCredentialsError:
+            print("Skipping bucket test - no permission file found!")
+            return
+
+        p = PointCounter(TEST_PREFECTS, points_file=TEST_POINTS, reset=True)
+        p.award_points("6 points to Gryffindor", TEST_PREFECTS[0])
+        p.post_update()
+
+        p2 = PointCounter(TEST_PREFECTS, points_file=TEST_POINTS)
+        self.assertEqual(p2.points['Gryffindor'], 6)
+
     def test_adding_points(self):
         p = PointCounter(TEST_PREFECTS, points_file=TEST_POINTS)
         msg = p.award_points("6 points to Gryffindor", TEST_PREFECTS[0])
-        for m in msg:
-            self.assertEqual(m, "Gryffindor gets 6 points")
+        self.assertEqual(msg[0], "Gryffindor gets 6 points")
 
     def test_adding_points_not_by_prefect(self):
         p = PointCounter(TEST_PREFECTS, points_file=TEST_POINTS)
