@@ -141,11 +141,11 @@ def convert_name_to_id(sc, channel, prefect_names):
             prefect_ids.append(user_id)
 
     print("Got prefect ids: {}".format(prefect_ids))
-    sc.api_call(
-        "chat.postMessage", channel=CHANNEL,
-        as_user=True, text="Your prefects will be: {}".format(
-            ",".join([f"<@{u}>" for u in prefect_ids])
-        ))
+    # sc.api_call(
+    #     "chat.postMessage", channel=CHANNEL,
+    #     as_user=True, text="Your prefects will be: {}".format(
+    #         ",".join([f"<@{u}>" for u in prefect_ids])
+    #     ))
 
     return prefect_ids
 
