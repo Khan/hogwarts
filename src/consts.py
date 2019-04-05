@@ -16,7 +16,16 @@ except ImportError:
     BOT_ID = ''
 
 HOUSES = ["Ravenclaw", "Hufflepuff", "Gryffindor", "Slytherin"]
-SPECIAL_SUBJECT = ["Dumbledore", "Mr Filch", "Mr. Filch"]
+SPECIAL_SUBJECT = {
+    "dumbledore": {
+        "name": "Professor Dumbledore",
+        "emoji": ":dumbledore-face:",
+    },
+    "filch": {
+        "name": "Mr. Filch",
+        "emoji": ":filch:",
+    }
+}
 # Announcers will be able to make the bot print the current standing
 ANNOUNCERS = PREFECTS
 IMAGE_PATH = "house_points.png"

@@ -4,6 +4,7 @@ import json
 import os
 import re
 import time
+from typing import Union, Tuple
 
 from google.auth import exceptions
 from slackclient import SlackClient
@@ -13,7 +14,8 @@ import points_util
 import cup_image
 from consts import (
     HOUSES, SLACK_TOKEN, PREFECTS, ANNOUNCERS, CHANNEL, ADMIN_CHANNEL,
-    POINTS_FILE, BUCKET_NAME, PUBLIC_CHANNEL, MAX_POINTS, BOT_ID
+    POINTS_FILE, BUCKET_NAME, PUBLIC_CHANNEL, MAX_POINTS, BOT_ID,
+    SPECIAL_SUBJECT
 )
 
 
@@ -77,19 +79,30 @@ class PointCounter(object):
         return f":party_{h.lower()}:"
 
     @classmethod
-    def message_for(cls, house, points, awarder=None, special_user=None):
+    def message_for(cls, house, points, awarder=None, special_user=None,
+                    reason=None) -> Union[str, Tuple[str, str]]:
+        """ Convert house and points into message
+
+        :return:  str or tuple (if special character)
+        """
         user_awared = f"<@{awarder}>" if awarder else ""
         if special_user:
+            reason = f"for {reason} " if reason else ""
             if points > 0:
-                return f"*{special_user}* awards " \
-                    f"{points_util.pluralized_points(points)} to {house}! " \
-                    f"{cls.get_house_emoji(house)}"
+                return (
+                    f"Awards "
+                    f"{points_util.pluralized_points(points)} to {house} "
+                    f"{reason} "
+                    f"{cls.get_house_emoji(house)}",
+                    special_user)
             house_emoji = " ".join([
                 cls.get_house_emoji(h) for h in HOUSES if h != house
             ])
-            return f"*{special_user}* takes away " \
-                f"{points_util.pluralized_points(abs(points))} from {house}! " \
-                f"{house_emoji}"
+            return (f"Takes away "
+                    f"{points_util.pluralized_points(abs(points))} from {house} "
+                    f"{reason} "
+                    f"{house_emoji}",
+                    special_user)
 
         if points > 0:
             return "%s %s gets %s %s" % (
@@ -98,19 +111,22 @@ class PointCounter(object):
         return "%s %s loses %s" % (
             user_awared, house, points_util.pluralized_points(abs(points)))
 
-    def award_points(self, message, awarder):
+    def award_points(self, message, awarder) -> Union[str, Tuple[str, str]]:
         points = self.get_points_from(message, awarder)
         houses = points_util.get_houses_from(message)
         special_user = None
+        reason = ''
         if awarder in self.prefects:
             special_user = points_util.get_subject_from(message)
+            reason = points_util.get_reason(message)
         messages = []
         if points and houses:
             for house in houses:
                 self.points[house] += points
                 self.points_dirty = True
                 messages.append(self.message_for(house, points, awarder,
-                                                 special_user=special_user))
+                                                 special_user=special_user,
+                                                 reason=reason))
                 if self.points[house] > MAX_POINTS:
                     self.points[house] = MAX_POINTS
                     messages.append(
@@ -178,9 +194,20 @@ def main():
                 if is_hogwarts_related(message):
                     print('is_hogwarts_related')
                     for m in p.award_points(message['text'], message['user']):
-                        sc.api_call(
-                            "chat.postMessage", channel=CHANNEL,
-                            as_user=True, text=m)
+                        if isinstance(m, tuple):
+                            msg, special_char = m
+                            slack_info = SPECIAL_SUBJECT.get(special_char, {})
+                            sc.api_call(
+                                "chat.postMessage",
+                                channel=CHANNEL,
+                                as_user=False,
+                                username=slack_info.get('name'),
+                                icon_emoji=slack_info.get('emoji'),
+                                text=msg)
+                        else:
+                            sc.api_call("chat.postMessage", channel=CHANNEL,
+                                        as_user=True,
+                                        text=m)
                         seen_messages = True
             # NOTE: the following rendering is slow, try to limit it's use
             if seen_messages:

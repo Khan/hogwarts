@@ -53,7 +53,14 @@ def get_houses_from(message):
 
 
 def get_subject_from(message):
-    for s in SPECIAL_SUBJECT:
+    for s in SPECIAL_SUBJECT.keys():
         if s.lower() in message.lower():
             return s
     return None
+
+
+def get_reason(message) -> str:
+    for s in ['for ', 'because of ']:
+        if s in message:
+            return message.split(s, 1)[1]
+    return ''
