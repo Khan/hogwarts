@@ -67,14 +67,14 @@ class TestPointCounter(unittest.TestCase):
         message = "Dumbledore awards 1 point to ravenclaw <@U0NJ1PH1R>"
         for m in self.p.award_points(message, "prefect"):
             self.assertEqual(
-                m[0], "Awards 1 point to Ravenclaw  :party_ravenclaw:")
+                m[0], "awards 1 point to Ravenclaw  :small_green_triangle_up: :ravenclaw:")
             self.assertEqual(m[1], "dumbledore")
 
     def test_works_with_dumbledore_with_prefect_with_reason(self):
         message = "Dumbledore awards 1 point to ravenclaw <@U0NJ1PH1R> for making reason works"
         for m in self.p.award_points(message, "prefect"):
             self.assertEqual(
-                m[0], "Awards 1 point to Ravenclaw for making reason works  :party_ravenclaw:")
+                m[0], "awards 1 point to Ravenclaw for making reason works  :small_green_triangle_up: :ravenclaw:")
             self.assertEqual(m[1], "dumbledore")
 
     def test_works_with_dumbledore_takes_away_with_prefect(self):
@@ -82,12 +82,12 @@ class TestPointCounter(unittest.TestCase):
         message = "Dumbledore takes away 1 point from Gryffindor <@U0NJ1PH1R> because of breaking reason"
         for m in self.p.award_points(message, "prefect"):
             self.assertEqual(
-                m[0], "Takes away 1 point from Gryffindor for breaking reason  "
-                ":party_ravenclaw: :party_hufflepuff: :party_slytherin:")
+                m[0], "takes away 1 point from Gryffindor for breaking reason  "
+                ":small_red_triangle_down: :gryffindor:")
             self.assertEqual(m[1], "dumbledore")
 
     def test_works_with_dumbledore_normal(self):
-        message = "Awards 1 point to ravenclaw <@U0NJ1PH1R> for cheating"
+        message = "awards 1 point to ravenclaw <@U0NJ1PH1R> for cheating"
         for m in self.p.award_points(message, "nymphadora tonks"):
             self.assertIn("<@nymphadora tonks> Ravenclaw gets 1 point", m)
 

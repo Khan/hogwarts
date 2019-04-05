@@ -75,8 +75,12 @@ class PointCounter(object):
         return amount
 
     @staticmethod
-    def get_house_emoji(h):
+    def get_house_party_emoji(h):
         return f":party_{h.lower()}:"
+
+    @staticmethod
+    def get_house_emoji(h):
+        return f":{h.lower()}:"
 
     @classmethod
     def message_for(cls, house, points, awarder=None, special_user=None,
@@ -90,26 +94,24 @@ class PointCounter(object):
             reason = f"for {reason} " if reason else ""
             if points > 0:
                 return (
-                    f"Awards "
+                    f"awards "
                     f"{points_util.pluralized_points(points)} to {house} "
                     f"{reason} "
-                    f"{cls.get_house_emoji(house)}",
+                    f":small_green_triangle_up: {cls.get_house_emoji(house)}",
                     special_user)
-            house_emoji = " ".join([
-                cls.get_house_emoji(h) for h in HOUSES if h != house
-            ])
-            return (f"Takes away "
+            return (f"takes away "
                     f"{points_util.pluralized_points(abs(points))} from {house} "
-                    f"{reason} "
-                    f"{house_emoji}",
+                    f"{reason} :small_red_triangle_down: "
+                    f"{cls.get_house_emoji(house)}",
                     special_user)
 
         if points > 0:
-            return "%s %s gets %s %s" % (
+            return "%s %s gets %s :small_green_triangle_up: %s" % (
                 user_awared, house, points_util.pluralized_points(points),
                 cls.get_house_emoji(house))
-        return "%s %s loses %s" % (
-            user_awared, house, points_util.pluralized_points(abs(points)))
+        return "%s %s loses %s :small_red_triangle_down: %s" % (
+            user_awared, house, points_util.pluralized_points(abs(points)),
+            cls.get_house_emoji(house))
 
     def award_points(self, message, awarder) -> Union[str, Tuple[str, str]]:
         points = self.get_points_from(message, awarder)
