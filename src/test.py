@@ -32,36 +32,77 @@ class TestPointCounter(unittest.TestCase):
 
     def test_adding_points(self):
         p = PointCounter(TEST_PREFECTS, points_file=TEST_POINTS)
-        msg = p.award_points("6 points to Gryffindor", TEST_PREFECTS[0])
-        self.assertEqual(msg[0], "<@prefect> Gryffindor gets 6 points")
+        msg = p.award_points("10 points to Gryffindor", TEST_PREFECTS[0])
+        self.assertIn("<@prefect> Gryffindor gets 10 points", msg[0])
 
     def test_adding_points_not_by_prefect(self):
         p = PointCounter(TEST_PREFECTS, points_file=TEST_POINTS)
         msg = p.award_points("6 points to Gryffindor", "harry potter")
         for m in msg:
-            self.assertEqual(m, "<@harry potter> Gryffindor gets 1 point")
+            self.assertIn("<@harry potter> Gryffindor gets 1 point", m)
 
     def test_adding_one_point(self):
         p = PointCounter(TEST_PREFECTS, points_file=TEST_POINTS)
         msg = p.award_points("oNe point to Gryffindor", "harry potter")
         for m in msg:
-            self.assertEqual(m, "<@harry potter> Gryffindor gets 1 point")
+            self.assertIn("<@harry potter> Gryffindor gets 1 point", m)
 
     def test_adding_one_point_to_slytherin(self):
         msg = self.p.award_points(
             "1 point to slytherin for @benkraft making slackbot"
             " listen for '911' mentions in 1s and 0s", "harry potter")
         for m in msg:
-            self.assertEqual(m, "<@harry potter> Slytherin gets 1 point")
+            self.assertIn("<@harry potter> Slytherin gets 1 point", m)
 
-    def test_subtracting_one_point(self):
-        for m in self.p.award_points("oNe point from Gryffindor", "harry potter"):
-            self.assertEqual(m, "<@harry potter> Gryffindor loses 1 point")
+    def test_subtracting_one_point_not_prefect(self):
+        msgs = self.p.award_points("oNe point from Gryffindor", "harry potter")
+        self.assertEqual(len(msgs), 0)
 
     def test_works_with_usernames(self):
         message = "1 point to ravenclaw <@U0NJ1PH1R>"
         for m in self.p.award_points(message, "nymphadora tonks"):
-            self.assertEqual(m, "<@nymphadora tonks> Ravenclaw gets 1 point")
+            self.assertIn("<@nymphadora tonks> Ravenclaw gets 1 point", m)
+
+    def test_works_with_dumbledore_with_prefect(self):
+        message = "Dumbledore awards 1 point to ravenclaw <@U0NJ1PH1R>"
+        for m in self.p.award_points(message, "prefect"):
+            self.assertEqual(
+                m[0], "Awards 1 point to Ravenclaw  :party_ravenclaw:")
+            self.assertEqual(m[1], "dumbledore")
+
+    def test_works_with_dumbledore_with_prefect_with_reason(self):
+        message = "Dumbledore awards 1 point to ravenclaw <@U0NJ1PH1R> for making reason works"
+        for m in self.p.award_points(message, "prefect"):
+            self.assertEqual(
+                m[0], "Awards 1 point to Ravenclaw for making reason works  :party_ravenclaw:")
+            self.assertEqual(m[1], "dumbledore")
+
+    def test_works_with_dumbledore_takes_away_with_prefect(self):
+        self.p.award_points("10 points to Gryffindor", TEST_PREFECTS[0])
+        message = "Dumbledore takes away 1 point from Gryffindor <@U0NJ1PH1R> because of breaking reason"
+        for m in self.p.award_points(message, "prefect"):
+            self.assertEqual(
+                m[0], "Takes away 1 point from Gryffindor for breaking reason  "
+                ":party_ravenclaw: :party_hufflepuff: :party_slytherin:")
+            self.assertEqual(m[1], "dumbledore")
+
+    def test_works_with_dumbledore_normal(self):
+        message = "Awards 1 point to ravenclaw <@U0NJ1PH1R> for cheating"
+        for m in self.p.award_points(message, "nymphadora tonks"):
+            self.assertIn("<@nymphadora tonks> Ravenclaw gets 1 point", m)
+
+    def test_works_with_dumbledore_says_with_prefect(self):
+        message = "Dumbledore says ho ho ho :party-khan:"
+        msg = self.p.award_points(message, "prefect")
+        self.assertIsInstance(msg[0], tuple)
+        msg_text, char = msg[0]
+        self.assertEqual(msg_text, "ho ho ho :party-khan:")
+        self.assertEqual(char, "dumbledore")
+
+    def test_works_with_dumbledore_says_no_prefect(self):
+        message = "Dumbledore says ho ho ho :party-khan:"
+        msg = self.p.award_points(message, "Harry potter")
+        self.assertEqual(len(msg), 0)
 
     def test_calculate_standings(self):
         p = PointCounter(TEST_PREFECTS, points_file=TEST_POINTS)

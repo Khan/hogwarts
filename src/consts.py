@@ -1,7 +1,8 @@
 try:
     from secrets import (
         SLACK_TOKEN, PREFECTS, CHANNEL, POINTS_FILE,
-        BUCKET_NAME, PUBLIC_CHANNEL
+        BUCKET_NAME, PUBLIC_CHANNEL,
+        ADMIN_CHANNEL, BOT_ID
     )
 except ImportError:
     # These will be mocked on tests
@@ -11,8 +12,20 @@ except ImportError:
     SLACK_TOKEN = ''
     CHANNEL = ''
     PUBLIC_CHANNEL = ''
+    ADMIN_CHANNEL = ''
+    BOT_ID = ''
 
 HOUSES = ["Ravenclaw", "Hufflepuff", "Gryffindor", "Slytherin"]
+SPECIAL_SUBJECT = {
+    "dumbledore": {
+        "name": "Professor Dumbledore",
+        "emoji": ":dumbledore-face:",
+    },
+    "filch": {
+        "name": "Mr. Filch",
+        "emoji": ":filch:",
+    }
+}
 # Announcers will be able to make the bot print the current standing
 ANNOUNCERS = PREFECTS
 IMAGE_PATH = "house_points.png"
