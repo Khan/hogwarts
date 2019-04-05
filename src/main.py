@@ -76,10 +76,18 @@ class PointCounter(object):
     def message_for(house, points, awarder=None, special_user=None):
         user_awared = f"<@{awarder}>" if awarder else ""
         if special_user:
-            emojis = ":party_gryffindor: :party_ravenclaw: :party_hufflepuff: :party_slytherin: <!here>"
+            def get_house_emoji(h):
+                return f":party_{h.lower()}:"
             if points > 0:
-                return f"*{special_user}* awards {points_util.pluralized_points(points)} to {house}! {emojis}"
-            return f"*{special_user}* takes away {points_util.pluralized_points(points)} from {house}! {emojis}"
+                return f"*{special_user}* awards " \
+                    f"{points_util.pluralized_points(points)} to {house}! " \
+                    f"{get_house_emoji(house)}"
+            house_emoji = " ".join([
+                get_house_emoji(h) for h in HOUSES if h != house
+            ])
+            return f"*{special_user}* takes away " \
+                f"{points_util.pluralized_points(abs(points))} from {house}! " \
+                f"{house_emoji}"
 
         if points > 0:
             return "%s %s gets %s" % (

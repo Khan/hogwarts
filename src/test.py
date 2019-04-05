@@ -32,8 +32,8 @@ class TestPointCounter(unittest.TestCase):
 
     def test_adding_points(self):
         p = PointCounter(TEST_PREFECTS, points_file=TEST_POINTS)
-        msg = p.award_points("6 points to Gryffindor", TEST_PREFECTS[0])
-        self.assertEqual(msg[0], "<@prefect> Gryffindor gets 6 points")
+        msg = p.award_points("10 points to Gryffindor", TEST_PREFECTS[0])
+        self.assertEqual(msg[0], "<@prefect> Gryffindor gets 10 points")
 
     def test_adding_points_not_by_prefect(self):
         p = PointCounter(TEST_PREFECTS, points_file=TEST_POINTS)
@@ -67,7 +67,15 @@ class TestPointCounter(unittest.TestCase):
         message = "Dumbledore awards 1 point to ravenclaw <@U0NJ1PH1R>"
         for m in self.p.award_points(message, "prefect"):
             self.assertEqual(
-                m, "*Dumbledore* awards 1 point to Ravenclaw! :party_gryffindor: :party_ravenclaw: :party_hufflepuff: :party_slytherin: <!here>")
+                m, "*Dumbledore* awards 1 point to Ravenclaw! :party_ravenclaw:")
+
+    def test_works_with_dumbledore_takes_away_with_prefect(self):
+        self.p.award_points("10 points to Gryffindor", TEST_PREFECTS[0])
+        message = "Dumbledore takes away 1 point from Gryffindor <@U0NJ1PH1R>"
+        for m in self.p.award_points(message, "prefect"):
+            self.assertEqual(
+                m, "*Dumbledore* takes away 1 point from Gryffindor! "
+                ":party_ravenclaw: :party_hufflepuff: :party_slytherin:")
 
     def test_works_with_dumbledore_normal(self):
         message = "Dumbledore awards 1 point to ravenclaw <@U0NJ1PH1R>"
