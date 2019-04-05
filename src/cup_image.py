@@ -47,7 +47,7 @@ def calculate_scales(house_points, base_ratio=0.6):
     interpolation_range = max_points - min_points
 
     # The base 60% is based on basic score
-    base = max((min_points / MAX_POINTS) * base_ratio, 0.1)
+    base = max((min_points / MAX_POINTS) * base_ratio, 0.25)
     # The rest of the base is intepolation, but with minimum 40%
     interpolation_ratio = max(
         (max_points / MAX_POINTS) * (1-base), (1-base_ratio)
