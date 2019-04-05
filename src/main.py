@@ -13,7 +13,7 @@ import points_util
 import cup_image
 from consts import (
     HOUSES, SLACK_TOKEN, PREFECTS, ANNOUNCERS, CHANNEL,
-    POINTS_FILE, BUCKET_NAME
+    POINTS_FILE, BUCKET_NAME, PUBLIC_CHANNEL
 )
 
 
@@ -139,11 +139,12 @@ def convert_name_to_id(sc, channel, prefect_names):
 def main():
     sc = SlackClient(SLACK_TOKEN)
     if sc.rtm_connect():
+        p = PointCounter(prefects=convert_name_to_id(sc, PUBLIC_CHANNEL,
+                                                     PREFECTS))
         sc.api_call(
             "chat.postMessage", channel=CHANNEL,
             as_user=True,
             text="I'm alive!")
-        p = PointCounter(prefects=convert_name_to_id(sc, CHANNEL, PREFECTS))
         while True:
             messages = sc.rtm_read()
             seen_messages = False
