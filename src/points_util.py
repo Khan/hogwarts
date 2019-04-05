@@ -2,6 +2,7 @@ import re
 
 from consts import SPECIAL_SUBJECT
 
+
 def clean(message):
     """Standardize spacing and capitalization"""
     return ' '.join(m.lower() for m in message.split() if m)
@@ -53,6 +54,6 @@ def get_houses_from(message):
 
 def get_subject_from(message):
     for s in SPECIAL_SUBJECT:
-        if s in message:
+        if s.lower() in message.lower():
             return s
     return None
