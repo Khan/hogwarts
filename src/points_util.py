@@ -1,13 +1,17 @@
 import re
 
+from consts import SPECIAL_SUBJECT
+
 def clean(message):
     """Standardize spacing and capitalization"""
     return ' '.join(m.lower() for m in message.split() if m)
+
 
 def pluralized_points(num_points):
     if num_points == 1 or num_points == -1:
         return "%d point" % num_points
     return "%d points" % num_points
+
 
 def detect_points(message):
     amounts = [amount for amount in clean(message).split()
@@ -19,6 +23,7 @@ def detect_points(message):
     else:
         return 0
 
+
 def detect_point_polarity(message):
     """Discern whether this is a point awarding or deduction"""
     message = clean(message)
@@ -28,6 +33,7 @@ def detect_point_polarity(message):
         return -1
     else:
         return 0
+
 
 def proper_name_for(house):
     """Forgive house misspelling"""
@@ -40,5 +46,13 @@ def proper_name_for(house):
     if "slyt" in house:
         return "Slytherin"
 
+
 def get_houses_from(message):
     return list(set(proper_name_for(w) for w in clean(message).split() if proper_name_for(w)))
+
+
+def get_subject_from(message):
+    for s in SPECIAL_SUBJECT:
+        if s in message:
+            return s
+    return None

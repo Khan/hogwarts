@@ -73,8 +73,13 @@ class PointCounter(object):
         return amount
 
     @staticmethod
-    def message_for(house, points, awarder=None):
+    def message_for(house, points, awarder=None, special_user=None):
         user_awared = f"<@{awarder}>" if awarder else ""
+        if special_user:
+            if points > 0:
+                return f"{special_user} awards {points_util.pluralized_points(points)} to {house}"
+            return f"{special_user} takes away {points_util.pluralized_points(points)} from {house}"
+
         if points > 0:
             return "%s %s gets %s" % (
                 user_awared, house, points_util.pluralized_points(points))
@@ -84,12 +89,16 @@ class PointCounter(object):
     def award_points(self, message, awarder):
         points = self.get_points_from(message, awarder)
         houses = points_util.get_houses_from(message)
+        special_user = None
+        if awarder in self.prefects:
+            special_user = points_util.get_subject_from(message)
         messages = []
         if points and houses:
             for house in houses:
                 self.points[house] += points
                 self.points_dirty = True
-                messages.append(self.message_for(house, points, awarder))
+                messages.append(self.message_for(house, points, awarder,
+                                                 special_user=special_user))
                 if self.points[house] > MAX_POINTS:
                     self.points[house] = MAX_POINTS
                     messages.append(

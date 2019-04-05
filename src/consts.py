@@ -13,6 +13,7 @@ except ImportError:
     PUBLIC_CHANNEL = ''
 
 HOUSES = ["Ravenclaw", "Hufflepuff", "Gryffindor", "Slytherin"]
+SPECIAL_SUBJECT = ["Dumbledore", "Mr. Filch"]
 # Announcers will be able to make the bot print the current standing
 ANNOUNCERS = PREFECTS
 IMAGE_PATH = "house_points.png"
