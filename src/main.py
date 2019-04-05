@@ -69,7 +69,7 @@ class PointCounter(object):
         amount = points_util.detect_points(message)
         # only prefects can award over one point at a time
         if awarder not in self.prefects:
-            amount = max(min(amount, 1), -1)
+            amount = max(min(amount, 1), 0)
         return amount
 
     @staticmethod
