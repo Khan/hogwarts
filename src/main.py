@@ -73,25 +73,28 @@ class PointCounter(object):
         return amount
 
     @staticmethod
-    def message_for(house, points, awarder=None, special_user=None):
+    def get_house_emoji(h):
+        return f":party_{h.lower()}:"
+
+    @classmethod
+    def message_for(cls, house, points, awarder=None, special_user=None):
         user_awared = f"<@{awarder}>" if awarder else ""
         if special_user:
-            def get_house_emoji(h):
-                return f":party_{h.lower()}:"
             if points > 0:
                 return f"*{special_user}* awards " \
                     f"{points_util.pluralized_points(points)} to {house}! " \
-                    f"{get_house_emoji(house)}"
+                    f"{cls.get_house_emoji(house)}"
             house_emoji = " ".join([
-                get_house_emoji(h) for h in HOUSES if h != house
+                cls.get_house_emoji(h) for h in HOUSES if h != house
             ])
             return f"*{special_user}* takes away " \
                 f"{points_util.pluralized_points(abs(points))} from {house}! " \
                 f"{house_emoji}"
 
         if points > 0:
-            return "%s %s gets %s" % (
-                user_awared, house, points_util.pluralized_points(points))
+            return "%s %s gets %s %s" % (
+                user_awared, house, points_util.pluralized_points(points),
+                cls.get_house_emoji(house))
         return "%s %s loses %s" % (
             user_awared, house, points_util.pluralized_points(abs(points)))
 
