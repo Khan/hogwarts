@@ -160,7 +160,7 @@ def is_hogwarts_related(message):
                 points_util.get_houses_from(message["text"])) or
             # Simple says
             ("say" in message["text"].lower() and
-                points_util.get_says(message["text"]))
+                points_util.get_subject_from(message["text"]))
         )
     )
 

@@ -54,20 +54,22 @@ def get_houses_from(message):
 
 def get_subject_from(message):
     for s in SPECIAL_SUBJECT.keys():
-        if s.lower() in message.lower():
-            return s
+        # allow "mr. filch", "prof dumbledor, etc."
+        for word in message.lower().split()[0:2]:
+            if s.lower() == word:
+                return s
     return None
 
 
 def get_reason(message) -> str:
     for s in ['for ', 'because of ']:
-        if s in message.lower():
+        if s in message:
             return message.split(s, 1)[1]
     return ''
 
 
 def get_says(message) -> str:
     for s in ['says ', 'say ']:
-        if s in message.lower():
+        if s in message:
             return message.split(s, 1)[1]
     return ''
