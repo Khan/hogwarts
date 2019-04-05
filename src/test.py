@@ -66,7 +66,7 @@ class TestPointCounter(unittest.TestCase):
     def test_works_with_dumbledore_with_prefect(self):
         message = "Dumbledore awards 1 point to ravenclaw <@U0NJ1PH1R>"
         for m in self.p.award_points(message, "prefect"):
-            self.assertEqual(m, "Dumbledore awards 1 point to Ravenclaw")
+            self.assertEqual(m, "Dumbledore awards 1 point to Ravenclaw!")
 
     def test_works_with_dumbledore_normal(self):
         message = "Dumbledore awards 1 point to ravenclaw <@U0NJ1PH1R>"

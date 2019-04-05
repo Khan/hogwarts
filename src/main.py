@@ -12,8 +12,8 @@ import google.cloud.storage
 import points_util
 import cup_image
 from consts import (
-    HOUSES, SLACK_TOKEN, PREFECTS, ANNOUNCERS, CHANNEL,
-    POINTS_FILE, BUCKET_NAME, PUBLIC_CHANNEL, MAX_POINTS
+    HOUSES, SLACK_TOKEN, PREFECTS, ANNOUNCERS, CHANNEL, ADMIN_CHANNEL,
+    POINTS_FILE, BUCKET_NAME, PUBLIC_CHANNEL, MAX_POINTS, BOT_ID
 )
 
 
@@ -77,8 +77,8 @@ class PointCounter(object):
         user_awared = f"<@{awarder}>" if awarder else ""
         if special_user:
             if points > 0:
-                return f"{special_user} awards {points_util.pluralized_points(points)} to {house}"
-            return f"{special_user} takes away {points_util.pluralized_points(points)} from {house}"
+                return f"{special_user} awards {points_util.pluralized_points(points)} to {house}!"
+            return f"{special_user} takes away {points_util.pluralized_points(points)} from {house}!"
 
         if points > 0:
             return "%s %s gets %s" % (
@@ -118,9 +118,9 @@ class PointCounter(object):
 def is_hogwarts_related(message):
     return (
         message.get("type", '') == "message" and
-        message.get("channel", '') == CHANNEL and
+        message.get("channel", '') in {CHANNEL, ADMIN_CHANNEL} and
         "text" in message and
-        "user" in message and
+        ("user" in message and message["user"] != BOT_ID) and
         "point" in message["text"] and
         points_util.get_houses_from(message["text"]))
 

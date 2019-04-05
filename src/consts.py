@@ -1,7 +1,8 @@
 try:
     from secrets import (
         SLACK_TOKEN, PREFECTS, CHANNEL, POINTS_FILE,
-        BUCKET_NAME, PUBLIC_CHANNEL
+        BUCKET_NAME, PUBLIC_CHANNEL,
+        ADMIN_CHANNEL, BOT_ID
     )
 except ImportError:
     # These will be mocked on tests
@@ -11,6 +12,8 @@ except ImportError:
     SLACK_TOKEN = ''
     CHANNEL = ''
     PUBLIC_CHANNEL = ''
+    ADMIN_CHANNEL = ''
+    BOT_ID = ''
 
 HOUSES = ["Ravenclaw", "Hufflepuff", "Gryffindor", "Slytherin"]
 SPECIAL_SUBJECT = ["Dumbledore", "Mr Filch", "Mr. Filch"]
