@@ -13,7 +13,7 @@ import points_util
 import cup_image
 from consts import (
     HOUSES, SLACK_TOKEN, PREFECTS, ANNOUNCERS, CHANNEL,
-    POINTS_FILE, BUCKET_NAME, PUBLIC_CHANNEL
+    POINTS_FILE, BUCKET_NAME, PUBLIC_CHANNEL, MAX_POINTS
 )
 
 
@@ -90,10 +90,14 @@ class PointCounter(object):
                 self.points[house] += points
                 self.points_dirty = True
                 messages.append(self.message_for(house, points, awarder))
-                if self.points[house] > 1200:
-                    self.points[house] = 1200
+                if self.points[house] > MAX_POINTS:
+                    self.points[house] = MAX_POINTS
                     messages.append(
                         "%s already has the maximum number of points!" % house)
+                elif self.points[house] < 0:
+                    self.points[house] = 0
+                    messages.append(
+                        "%s already at zero points!" % house)
         return messages
 
     def print_status(self):
