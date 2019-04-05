@@ -4,7 +4,7 @@ import json
 import os
 import re
 import time
-from typing import Union, Tuple
+from typing import Union, Tuple, Optional
 
 from google.auth import exceptions
 from slackclient import SlackClient
@@ -114,11 +114,13 @@ class PointCounter(object):
     def award_points(self, message, awarder) -> Union[str, Tuple[str, str]]:
         points = self.get_points_from(message, awarder)
         houses = points_util.get_houses_from(message)
-        special_user = None
+        special_user: Optional[str] = None
         reason = ''
+        says = ''
         if awarder in self.prefects:
             special_user = points_util.get_subject_from(message)
             reason = points_util.get_reason(message)
+            says = points_util.get_says(message)
         messages = []
         if points and houses:
             for house in houses:
@@ -135,6 +137,9 @@ class PointCounter(object):
                     self.points[house] = 0
                     messages.append(
                         "%s already at zero points!" % house)
+        elif special_user and says:
+            messages.append((says, special_user))
+
         return messages
 
     def print_status(self):
@@ -149,8 +154,15 @@ def is_hogwarts_related(message):
         message.get("channel", '') in {CHANNEL, ADMIN_CHANNEL} and
         "text" in message and
         ("user" in message and message["user"] != BOT_ID) and
-        "point" in message["text"] and
-        points_util.get_houses_from(message["text"]))
+        (
+            # Points message
+            ("point" in message["text"].lower() and
+                points_util.get_houses_from(message["text"])) or
+            # Simple says
+            ("say" in message["text"].lower() and
+                points_util.get_says(message["text"]))
+        )
+    )
 
 
 def convert_name_to_id(sc, channel, prefect_names):
@@ -188,14 +200,14 @@ def main():
             text="I'm alive!")
         while True:
             messages = sc.rtm_read()
-            seen_messages = False
+            seen_point_messages = False
             for message in messages:
                 print("Message: %s" % message)
                 if is_hogwarts_related(message):
                     print('is_hogwarts_related')
                     for m in p.award_points(message['text'], message['user']):
                         if isinstance(m, tuple):
-                            msg, special_char = m
+                            m, special_char = m
                             slack_info = SPECIAL_SUBJECT.get(special_char, {})
                             sc.api_call(
                                 "chat.postMessage",
@@ -203,14 +215,15 @@ def main():
                                 as_user=False,
                                 username=slack_info.get('name'),
                                 icon_emoji=slack_info.get('emoji'),
-                                text=msg)
+                                text=m)
                         else:
                             sc.api_call("chat.postMessage", channel=CHANNEL,
                                         as_user=True,
                                         text=m)
-                        seen_messages = True
+                        # HACK: Avoid seeing "says" messages
+                        seen_point_messages = ('point' in m)
             # NOTE: the following rendering is slow, try to limit it's use
-            if seen_messages:
+            if seen_point_messages:
                 os.system(
                     "curl -F file=@%s -F title=%s -F channels=%s -F token=%s https://slack.com/api/files.upload"
                     % (cup_image.image_for_scores(p.points), '"House Points"', CHANNEL, SLACK_TOKEN))

@@ -61,6 +61,13 @@ def get_subject_from(message):
 
 def get_reason(message) -> str:
     for s in ['for ', 'because of ']:
-        if s in message:
+        if s in message.lower():
+            return message.split(s, 1)[1]
+    return ''
+
+
+def get_says(message) -> str:
+    for s in ['says ', 'say ']:
+        if s in message.lower():
             return message.split(s, 1)[1]
     return ''

@@ -91,6 +91,19 @@ class TestPointCounter(unittest.TestCase):
         for m in self.p.award_points(message, "nymphadora tonks"):
             self.assertIn("<@nymphadora tonks> Ravenclaw gets 1 point", m)
 
+    def test_works_with_dumbledore_says_with_prefect(self):
+        message = "Dumbledore says ho ho ho :party-khan:"
+        msg = self.p.award_points(message, "prefect")
+        self.assertIsInstance(msg[0], tuple)
+        msg_text, char = msg[0]
+        self.assertEqual(msg_text, "ho ho ho :party-khan:")
+        self.assertEqual(char, "dumbledore")
+
+    def test_works_with_dumbledore_says_no_prefect(self):
+        message = "Dumbledore says ho ho ho :party-khan:"
+        msg = self.p.award_points(message, "Harry potter")
+        self.assertEqual(len(msg), 0)
+
     def test_calculate_standings(self):
         p = PointCounter(TEST_PREFECTS, points_file=TEST_POINTS)
         p.award_points("6 points to Gryffindor", TEST_PREFECTS[0])
