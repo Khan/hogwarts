@@ -90,6 +90,8 @@ class PointCounter(object):
         :return:  str or tuple (if special character)
         """
         user_awared = f"<@{awarder}>" if awarder else ""
+        up_icon = ":small_green_triangle_up:"
+        down_icon = ":small_red_triangle_down:"
         if special_user:
             reason = f"for {reason} " if reason else ""
             if points > 0:
@@ -97,21 +99,21 @@ class PointCounter(object):
                     f"awards "
                     f"{points_util.pluralized_points(points)} to {house} "
                     f"{reason} "
-                    f":small_green_triangle_up: {cls.get_house_emoji(house)}",
+                    f"{cls.get_house_emoji(house)} {up_icon}",
                     special_user)
             return (f"takes away "
                     f"{points_util.pluralized_points(abs(points))} from {house} "
-                    f"{reason} :small_red_triangle_down: "
-                    f"{cls.get_house_emoji(house)}",
+                    f"{reason} "
+                    f"{cls.get_house_emoji(house)} {down_icon}",
                     special_user)
 
         if points > 0:
-            return "%s %s gets %s :small_green_triangle_up: %s" % (
-                user_awared, house, points_util.pluralized_points(points),
-                cls.get_house_emoji(house))
-        return "%s %s loses %s :small_red_triangle_down: %s" % (
-            user_awared, house, points_util.pluralized_points(abs(points)),
-            cls.get_house_emoji(house))
+            return f"{user_awared} {house} gets " \
+                f"{points_util.pluralized_points(points)} " \
+                f"{cls.get_house_emoji(house)} {up_icon}"
+        return f"{user_awared} {house} loses " \
+            f"{points_util.pluralized_points(points)} " \
+            f"{cls.get_house_emoji(house)} {down_icon}"
 
     def award_points(self, message, awarder) -> Union[str, Tuple[str, str]]:
         points = self.get_points_from(message, awarder)
