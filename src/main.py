@@ -4,7 +4,7 @@ import json
 import os
 import re
 import time
-from typing import Union, Tuple, Optional
+from typing import Union, Tuple, Optional, List
 
 from google.auth import exceptions
 from slackclient import SlackClient
@@ -84,7 +84,7 @@ class PointCounter(object):
 
     @classmethod
     def message_for(cls, house, points, awarder=None, special_user=None,
-                    reason=None) -> Union[str, Tuple[str, str]]:
+                    reason=None) -> List[Union[str, Tuple[str, str]]]:
         """ Convert house and points into message
 
         :return:  str or tuple (if special character)
