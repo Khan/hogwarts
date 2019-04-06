@@ -112,7 +112,7 @@ class PointCounter(object):
                 f"{points_util.pluralized_points(points)} " \
                 f"{cls.get_house_emoji(house)} {up_icon}"
         return f"{user_awared} {house} loses " \
-            f"{points_util.pluralized_points(points)} " \
+            f"{points_util.pluralized_points(abs(points))} " \
             f"{cls.get_house_emoji(house)} {down_icon}"
 
     def award_points(self, message, awarder) -> Union[str, Tuple[str, str]]:

@@ -54,6 +54,10 @@ class TestPointCounter(unittest.TestCase):
         for m in msg:
             self.assertIn("<@harry potter> Slytherin gets 1 point", m)
 
+    def test_subtracting_one_point_prefect(self):
+        msgs = self.p.award_points("oNe point from Gryffindor", "prefect")
+        self.assertIn("<@prefect> Gryffindor loses 1 point", msgs[0])
+
     def test_subtracting_one_point_not_prefect(self):
         msgs = self.p.award_points("oNe point from Gryffindor", "harry potter")
         self.assertEqual(len(msgs), 0)
