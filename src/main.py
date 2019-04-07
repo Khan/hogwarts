@@ -84,7 +84,7 @@ class PointCounter(object):
 
     @classmethod
     def message_for(cls, house, points, awarder=None, special_user=None,
-                    reason=None) -> List[Union[str, Tuple[str, str]]]:
+                    reason=None) -> Union[str, Tuple[str, str]]:
         """ Convert house and points into message
 
         :return:  str or tuple (if special character)
@@ -115,7 +115,8 @@ class PointCounter(object):
             f"{points_util.pluralized_points(abs(points))} " \
             f"{cls.get_house_emoji(house)} {down_icon}"
 
-    def award_points(self, message, awarder) -> Union[str, Tuple[str, str]]:
+    def award_points(self, message, awarder, channel=None
+                     ) -> List[Union[str, Tuple[str, str]]]:
         points = self.get_points_from(message, awarder)
         houses = points_util.get_houses_from(message)
         special_user: Optional[str] = None
@@ -141,7 +142,7 @@ class PointCounter(object):
                     self.points[house] = 0
                     messages.append(
                         "%s already at zero points!" % house)
-        elif special_user and says:
+        elif special_user and channel == ADMIN_CHANNEL and says:
             messages.append((says, special_user))
 
         return messages
@@ -209,7 +210,8 @@ def main():
                 print("Message: %s" % message)
                 if is_hogwarts_related(message):
                     print('is_hogwarts_related')
-                    for m in p.award_points(message['text'], message['user']):
+                    for m in p.award_points(message['text'], message['user'],
+                                            channel=message['channel']):
                         if isinstance(m, tuple):
                             m, special_char = m
                             slack_info = SPECIAL_SUBJECT.get(special_char, {})
