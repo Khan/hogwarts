@@ -199,10 +199,10 @@ def main():
     if sc.rtm_connect():
         p = PointCounter(prefects=convert_name_to_id(sc, PUBLIC_CHANNEL,
                                                      PREFECTS))
-        sc.api_call(
-            "chat.postMessage", channel=CHANNEL,
-            as_user=True,
-            text="I'm alive!")
+        # sc.api_call(
+        #     "chat.postMessage", channel=CHANNEL,
+        #     as_user=True,
+        #     text="I'm alive!")
         while True:
             messages = sc.rtm_read()
             seen_point_messages = False

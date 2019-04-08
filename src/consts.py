@@ -24,6 +24,10 @@ SPECIAL_SUBJECT = {
     "filch": {
         "name": "Mr. Filch",
         "emoji": ":filch:",
+    },
+    "mcgonagall": {
+        "name": "Professor McGonagall",
+        "emoji": ":mcgonagall:",
     }
 }
 # Announcers will be able to make the bot print the current standing

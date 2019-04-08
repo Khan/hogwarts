@@ -1,6 +1,6 @@
 import re
 
-from consts import SPECIAL_SUBJECT
+from consts import SPECIAL_SUBJECT, HOUSES
 
 
 def clean(message):
@@ -49,7 +49,10 @@ def proper_name_for(house):
 
 
 def get_houses_from(message):
-    return list(set(proper_name_for(w) for w in clean(message).split() if proper_name_for(w)))
+    tokenized = clean(message).split()
+    if 'everybody' in tokenized:
+        return HOUSES
+    return list(set(proper_name_for(w) for w in tokenized if proper_name_for(w)))
 
 
 def get_subject_from(message):
