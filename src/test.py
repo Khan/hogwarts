@@ -1,10 +1,12 @@
 """
 Test point counter functionality
 """
-from main import PointCounter, get_client
 import unittest
 
 from google.auth import exceptions
+
+from main import PointCounter, get_client
+from consts import ADMIN_CHANNEL
 
 TEST_PREFECTS = ["prefect"]
 TEST_POINTS = "dataset/hackathon.test.json"
@@ -34,6 +36,18 @@ class TestPointCounter(unittest.TestCase):
         p = PointCounter(TEST_PREFECTS, points_file=TEST_POINTS)
         msg = p.award_points("10 points to Gryffindor", TEST_PREFECTS[0])
         self.assertIn("<@prefect> Gryffindor gets 10 points", msg[0])
+
+    def test_parsing_edge_case(self):
+        p = PointCounter(TEST_PREFECTS, points_file=TEST_POINTS)
+        edge_cases = [
+            "1 point to gryffindor for <@U15BW22P9> ... 5 years ago",
+            "....1 point to gryffindor",
+        ]
+        for slack_msg in edge_cases:
+            msg = p.award_points(
+                slack_msg,
+                TEST_PREFECTS[0])
+            self.assertIn("<@prefect> Gryffindor gets 1 point", msg[0])
 
     def test_adding_points_not_by_prefect(self):
         p = PointCounter(TEST_PREFECTS, points_file=TEST_POINTS)
@@ -69,20 +83,21 @@ class TestPointCounter(unittest.TestCase):
 
     def test_works_with_dumbledore_with_prefect(self):
         message = "Dumbledore awards 1 point to ravenclaw <@U0NJ1PH1R>"
-        for m in self.p.award_points(message, "prefect"):
+        for m in self.p.award_points(message, "prefect", channel=ADMIN_CHANNEL):
             self.assertEqual(
                 m[0], "awards 1 point to Ravenclaw  :ravenclaw: :small_green_triangle_up:")
             self.assertEqual(m[1], "dumbledore")
 
     def test_works_with_dumbledore_with_prefect_with_reason(self):
         message = "Dumbledore awards 1 point to ravenclaw <@U0NJ1PH1R> for making reason works"
-        for m in self.p.award_points(message, "prefect"):
+        for m in self.p.award_points(message, "prefect", channel=ADMIN_CHANNEL):
             self.assertEqual(
                 m[0], "awards 1 point to Ravenclaw for making reason works  :ravenclaw: :small_green_triangle_up:")
             self.assertEqual(m[1], "dumbledore")
 
     def test_works_with_dumbledore_takes_away_with_prefect(self):
-        self.p.award_points("10 points to Gryffindor", TEST_PREFECTS[0])
+        self.p.award_points("10 points to Gryffindor",
+                            TEST_PREFECTS[0], channel=ADMIN_CHANNEL)
         message = "Dumbledore takes away 1 point from Gryffindor <@U0NJ1PH1R> because of breaking reason"
         for m in self.p.award_points(message, "prefect"):
             self.assertEqual(
@@ -92,12 +107,12 @@ class TestPointCounter(unittest.TestCase):
 
     def test_works_with_dumbledore_normal(self):
         message = "awards 1 point to ravenclaw <@U0NJ1PH1R> for cheating"
-        for m in self.p.award_points(message, "nymphadora tonks"):
+        for m in self.p.award_points(message, "nymphadora tonks", channel=ADMIN_CHANNEL):
             self.assertIn("<@nymphadora tonks> Ravenclaw gets 1 point", m)
 
     def test_works_with_dumbledore_says_with_prefect(self):
         message = "Dumbledore says ho ho ho :party-khan:"
-        msg = self.p.award_points(message, "prefect")
+        msg = self.p.award_points(message, "prefect", channel=ADMIN_CHANNEL)
         self.assertIsInstance(msg[0], tuple)
         msg_text, char = msg[0]
         self.assertEqual(msg_text, "ho ho ho :party-khan:")
@@ -105,7 +120,8 @@ class TestPointCounter(unittest.TestCase):
 
     def test_works_with_dumbledore_says_no_prefect(self):
         message = "Dumbledore says ho ho ho :party-khan:"
-        msg = self.p.award_points(message, "Harry potter")
+        msg = self.p.award_points(
+            message, "Harry potter", channel=ADMIN_CHANNEL)
         self.assertEqual(len(msg), 0)
 
     def test_calculate_standings(self):

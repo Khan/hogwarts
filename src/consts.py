@@ -10,9 +10,9 @@ except ImportError:
     BUCKET_NAME = ''
     PREFECTS = []
     SLACK_TOKEN = ''
-    CHANNEL = ''
-    PUBLIC_CHANNEL = ''
-    ADMIN_CHANNEL = ''
+    CHANNEL = 'channel'
+    PUBLIC_CHANNEL = 'public'
+    ADMIN_CHANNEL = 'admin'
     BOT_ID = ''
 
 HOUSES = ["Ravenclaw", "Hufflepuff", "Gryffindor", "Slytherin"]

@@ -126,6 +126,7 @@ class PointCounter(object):
             special_user = points_util.get_subject_from(message)
             reason = points_util.get_reason(message)
             says = points_util.get_says(message)
+        print(f"Rendering message: houses={houses}, points={points} special_user={special_user}")
         messages = []
         if points and houses:
             for house in houses:

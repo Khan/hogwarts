@@ -15,11 +15,11 @@ def pluralized_points(num_points):
 
 
 def detect_points(message):
-    amounts = [amount for amount in clean(message).split()
+    amounts = [amount for amount in re.split(r"\W", clean(message))
                if amount.isdigit()]
     if len(amounts) == 0 and 'one' in clean(message):
         amounts = [1]
-    if len(amounts) == 1:
+    if len(amounts) >= 1:
         return int(amounts[0]) * detect_point_polarity(message)
     else:
         return 0
